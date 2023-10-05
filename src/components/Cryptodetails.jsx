@@ -3,6 +3,8 @@ import HTMLReactParser from "html-react-parser";
 import { useParams } from "react-router-dom";
 import millify from "millify";
 import { Col, Row, Typography, Select } from "antd";
+import LineChart from "./LineChart";
+import Loader from "./Loader";
 import {
   MoneyCollectOutlined,
   DollarCircleOutlined,
@@ -15,7 +17,10 @@ import {
   ThunderboltOutlined,
 } from "@ant-design/icons";
 
-import { useGetCryptoDetailsQuery } from "../services/cryptoApi";
+import {
+  useGetCryptoDetailsQuery,
+  useGetCryptoHistoryQuery,
+} from "../services/cryptoApi";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -24,8 +29,17 @@ const Cryptodetails = () => {
   const { coinId } = useParams();
   const [timePeriod, setTimePeriod] = useState("7d");
   const { data, error, isFetching } = useGetCryptoDetailsQuery(coinId);
+  const { data: coinHistory } = useGetCryptoHistoryQuery({
+    coinId,
+    timePeriod,
+  });
+
   if (isFetching) {
-    return <div>Loading</div>;
+    return (
+      <div>
+        <Loader />
+      </div>
+    );
   }
   if (error) {
     return <div>Error:{error.message}</div>;
@@ -121,7 +135,11 @@ const Cryptodetails = () => {
           <option key={date}>{date}</option>
         ))}
       </Select>
-      {/* line chart */}
+      <LineChart
+        coinHistory={coinHistory}
+        currentPrice={millify(cryptoDetails.price)}
+        coinName={cryptoDetails.name}
+      />
       <Col className="stats-container">
         <Col className="coin-value-statistics">
           <Col className="coin-value-statistics-heading">
